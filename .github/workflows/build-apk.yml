@@ -1,34 +1,23 @@
 name: Build PrimeBook APK
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - name: Unzip project
+        run: unzip -q PrimeBook_phase1.zip
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-          cache: gradle
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v3
         with:
-          name: PrimeBook-APK
-          path: app/build/outputs/apk/debug/*.apk
+          gradle-version: 8.5
+      - name: Build
+        working-directory: PrimeBook
+        run: gradle assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PrimeBook-debug-apk
+          path: PrimeBook/app/build/outputs/apk/debug/*.apk
